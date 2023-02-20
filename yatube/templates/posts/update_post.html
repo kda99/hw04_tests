@@ -1,0 +1,98 @@
+<!DOCTYPE html> 
+<html lang="ru"> 
+  <head>    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../img/fav/fav.ico" type="image">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/fav/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/fav/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/fav/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <title>Редактировать запись</title>
+  </head>
+  <body>
+    <header>
+      {% include 'includes/header.html' %}
+    </header>
+    <main>
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8 p-5">
+            <div class="card">
+              <div class="card-header">
+                Редактировать запись
+              </div>
+              <div class="card-body">
+              {% load user_filters %} {# Загружаем фильтры #}
+              {% if form.errors %}
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <div class="alert alert-danger">
+                      {{ error|escape }}
+                    </div>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <div class="alert alert-danger">
+                    {{ error|escape }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              <form method="post" action="{% url 'posts:post_create' %}">
+              {% csrf_token %}
+
+              <div class="form-group row my-3">
+                  <label for="{{ form.text.id_for_label }}">
+                    Текст поста
+                      {% if form.text.field.required %}
+                        <span class="required text-danger">*</span>
+                      {% endif %}
+                  </label>
+                  {# К полю ввода добавляем атрибут class #}
+                  {{ form.text|addclass:'form-control' }}
+                      <small
+                         id="{{ form.text.id_for_label }}-help"
+                         class="form-text text-muted"
+                      >
+                        Текст нового поста
+                      </small>
+                </div>
+                <div class="form-group row my-3">
+                  <label for="{{ form.group.id_for_label }}">
+                    Группа
+                      {% if form.group.field.required %}
+                        <span class="required text-danger">*</span>
+                      {% endif %}
+                  </label>
+                  {# К полю ввода добавляем атрибут class #}
+                  {{ form.group|addclass:'form-control' }}
+
+                      <small
+                         id="{{ form.group.id_for_label }}-help"
+                         class="form-text text-muted"
+                      >
+                        Группа, к которой будет относиться пост
+                      </small>
+
+                </div>
+                    <button type="submit" class="btn btn-primary">
+                      {% if is_edit %}
+                        Сохранить
+                      {% else %}
+                        Добавить
+                      {% endif %}
+                    </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="border-top text-center py-3">
+      {% include 'includes/footer.html' %}
+    </footer>
+  </body>
+</html>

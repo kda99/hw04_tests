@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}
+  <title>Записи сообщества  {{ group.title }}</title>
+{% endblock %}
+{% block topic %}
+  <h1>{{ group.title }}</h1>
+{% endblock %}
+{% block content %}
+  <p>
+    {{ group.description|linebreaksbr }}
+  </p>
+{% for post in page_obj %}
+  {% include 'includes/post.html' %}
+  <a href="{% url 'posts:post_detail' post.id %}">подробная информация</a>
+  {% if not forloop.last %}<hr>{% endif %}
+{% endfor %}
+{% include 'posts/includes/paginator.html' %}
+{% endblock %}
