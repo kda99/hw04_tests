@@ -4,7 +4,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
 
-from yatube.posts.models import Group, Post, User
+from posts.models import Group, Post, User
 
 
 class PostsPagesTests(TestCase):

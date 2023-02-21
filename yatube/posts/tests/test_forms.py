@@ -3,8 +3,8 @@ from http import HTTPStatus
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from yatube.posts.forms import PostForm
-from yatube.posts.models import Group, Post, User
+from posts.forms import PostForm
+from posts.models import Group, Post, User
 
 POST_CREATE = reverse('posts:post_create')
 
@@ -74,6 +74,11 @@ class PostFormTest(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(Post.objects.filter(text='Тестовый текст').count())
 
+        last_post = Post.objects.order_by('-id')[0]
+
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.author, self.author)
+
     def test_edit_post_anonim(self):
         """аноним не может отредактировать пост"""
         posts_count = Post.objects.count()
@@ -114,3 +119,8 @@ class PostFormTest(TestCase):
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(Post.objects.filter(
             text='Отредактированный текст').count())
+
+        last_post = Post.objects.order_by('-id')[0]
+
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.author, self.author)

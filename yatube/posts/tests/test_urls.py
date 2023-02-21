@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 
-from yatube.posts.models import Group, Post, User
+from posts.models import Group, Post, User
 
 
 class PostModelTest(TestCase):
