@@ -1,22 +1,15 @@
-import tempfile
 from http import HTTPStatus
 
-from ..forms import PostForm
-from ..models import Group, Post
-from django.conf import settings
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 
-# Создаем временную папку для медиа-файлов;
-# на момент теста медиа папка будет переопределена
-TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+from yatube.posts.forms import PostForm
+from yatube.posts.models import Group, Post, User
 
-
-User = get_user_model()
+POST_CREATE = reverse('posts:post_create')
 
 
-class TaskPostFormTest(TestCase):
+class PostFormTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -31,7 +24,6 @@ class TaskPostFormTest(TestCase):
             author=cls.author,
             group=cls.group
         )
-        # Создаем форму, если нужна проверка атрибутов
         cls.form = PostForm()
 
     @classmethod
@@ -39,14 +31,13 @@ class TaskPostFormTest(TestCase):
         super().tearDownClass()
 
     def setUp(self):
-        # Создаем неавторизованный клиент
         self.user = User.objects.create_user(username='User')
+        self.anonim_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.author)
 
-    def test_create_post(self):
-        """Валидная форма создает запись в Post."""
-        # Подсчитаем количество записей в Task
+    def test_create_post_anonim(self):
+        """аноним не может создать пост"""
         posts_count = Post.objects.count()
 
         form_data = {
@@ -54,9 +45,27 @@ class TaskPostFormTest(TestCase):
             'group': self.group.id,
         }
 
-        # Отправляем POST-запрос
+        response = self.anonim_client.post(
+            POST_CREATE,
+            data=form_data,
+            follow=True
+        )
+
+        self.assertEqual(Post.objects.count(), posts_count)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertTrue(not Post.objects.filter(text='Тестовый текст').count())
+
+    def test_create_post(self):
+        """Валидная форма создает запись в Post."""
+        posts_count = Post.objects.count()
+
+        form_data = {
+            'text': 'Тестовый текст',
+            'group': self.group.id,
+        }
+
         response = self.authorized_client.post(
-            reverse('posts:post_create'),
+            POST_CREATE,
             data=form_data,
             follow=True
         )
@@ -65,17 +74,36 @@ class TaskPostFormTest(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(Post.objects.filter(text='Тестовый текст').count())
 
+    def test_edit_post_anonim(self):
+        """аноним не может отредактировать пост"""
+        posts_count = Post.objects.count()
+        POST_EDIT = reverse('posts:post_edit', args=({self.post.id}))
+        form_data = {
+            'text': 'Отредактированный текст',
+            'group': self.group.id,
+        }
+
+        self.anonim_client.post(
+            POST_EDIT,
+            data=form_data,
+            follow=True
+        )
+
+        self.assertEqual(Post.objects.count(), posts_count)
+        self.assertTrue(not Post.objects.filter(
+            text='Отредактированный текст').count())
+
     def test_edit_post(self):
         """Валидная форма редактирует пост"""
         posts_count = Post.objects.count()
-
+        POST_EDIT = reverse('posts:post_edit', args=({self.post.id}))
         form_data = {
             'text': 'Отредактированный текст',
             'group': self.group.id,
         }
 
         response = self.authorized_client.post(
-            reverse('posts:post_edit', args=({self.post.id})),
+            POST_EDIT,
             data=form_data,
             follow=True
         )
