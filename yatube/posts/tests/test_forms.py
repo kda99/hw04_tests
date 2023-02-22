@@ -3,7 +3,6 @@ from http import HTTPStatus
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.forms import PostForm
 from posts.models import Group, Post, User
 
 POST_CREATE = reverse('posts:post_create')
@@ -24,11 +23,6 @@ class PostFormTest(TestCase):
             author=cls.author,
             group=cls.group
         )
-        cls.form = PostForm()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def setUp(self):
         self.user = User.objects.create_user(username='User')
@@ -53,7 +47,6 @@ class PostFormTest(TestCase):
 
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertTrue(not Post.objects.filter(text='Тестовый текст').count())
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
@@ -72,7 +65,6 @@ class PostFormTest(TestCase):
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertTrue(Post.objects.filter(text='Тестовый текст').count())
 
         last_post = Post.objects.order_by('-id')[0]
 

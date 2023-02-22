@@ -5,6 +5,9 @@ from django import forms
 from posts.models import Group, Post, User
 
 INDEX = reverse('posts:index')
+GROUP_LIST = reverse('posts:group_list', kwargs={'slug': 'test-slug'})
+POST_CREATE = reverse('posts:post_create')
+PAGE_IN_PAGINATOR = 10
 
 
 class PostsPagesTests(TestCase):
@@ -40,7 +43,7 @@ class PostsPagesTests(TestCase):
 
     def test_post_create_page_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
-        response = self.authorized_author.get(reverse('posts:post_create'))
+        response = self.authorized_author.get(POST_CREATE)
         self.assert_form_context(response)
 
     def test_post_edit_page_show_correct_context(self):
@@ -51,8 +54,7 @@ class PostsPagesTests(TestCase):
 
     def test_post_group_list_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
-        response = self.authorized_author.get(reverse(
-            'posts:group_list', kwargs={'slug': 'test-slug'}))
+        response = self.authorized_author.get(GROUP_LIST)
         first_object = response.context['page_obj'][0]
         post_text_0 = first_object.id
         post_author_0 = first_object.author
@@ -63,8 +65,7 @@ class PostsPagesTests(TestCase):
 
     def test_post_profile_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
-        response = self.authorized_author.get(
-            reverse('posts:group_list', kwargs={'slug': 'test-slug'}))
+        response = self.authorized_author.get(GROUP_LIST)
         first_object = response.context['page_obj'][0]
         post_text_0 = first_object.id
         post_author_0 = first_object.author
@@ -95,8 +96,7 @@ class PostsPagesTests(TestCase):
             author=self.author,
             group=another_group
         )
-        response = self.authorized_author.get(
-            reverse('posts:group_list', kwargs={'slug': 'test-slug'}))
+        response = self.authorized_author.get(GROUP_LIST)
         for post in response.context['page_obj']:
             self.assertNotEqual(post.group, another_group)
 
@@ -129,7 +129,7 @@ class PaginatorViewsTest(TestCase):
             with self.subTest(reverse_name=reverse_name):
                 response = self.client.get(reverse_name)
                 self.assertEqual(
-                    len(response.context['page_obj']), 10
+                    len(response.context['page_obj']), PAGE_IN_PAGINATOR
                 )
 
     def test_second_page_contains_three_records(self):

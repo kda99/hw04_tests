@@ -3,6 +3,9 @@ from django.urls import reverse
 
 from posts.models import Group, Post, User
 
+INDEX = reverse('posts:index', None)
+POST_CREATE = reverse('posts:post_create')
+
 
 class PostModelTest(TestCase):
     @classmethod
@@ -31,9 +34,8 @@ class PostModelTest(TestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        # Шаблоны по адресам
         templates_url_names = {
-            reverse('posts:index', None): 'posts/index.html',
+            INDEX: 'posts/index.html',
             reverse('posts:group_list', kwargs={'slug': self.group.slug}):
                 'posts/group_list.html',
             reverse('posts:profile', kwargs={'username': self.author}):
@@ -42,17 +44,19 @@ class PostModelTest(TestCase):
                 'posts/create_post.html',
             reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
                 'posts/post_detail.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
+            POST_CREATE: 'posts/create_post.html',
         }
 
         for address, template in templates_url_names.items():
-            if address not in (f'/posts/{self.post.id}/edit/', '/create/'):
+            if address not in (reverse('posts:post_edit', kwargs={
+                    'post_id': self.post.pk}), POST_CREATE):
                 with self.subTest(address=address):
                     response = self.guest_client.get(address)
                     self.assertTemplateUsed(response, template)
 
         for address, template in templates_url_names.items():
-            if address not in (f'/posts/{self.post.id}/edit/',):
+            if address not in (reverse('posts:post_edit', kwargs={
+                    'post_id': self.post.pk}),):
                 with self.subTest(address=address):
                     response = self.authorized_client.get(address)
                     self.assertTemplateUsed(response, template)
